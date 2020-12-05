@@ -12,38 +12,60 @@ namespace DynamicDiplomacy
 
         protected override bool CanFireNowSub(IncidentParms parms)
         {
-            Faction faction;
-            Faction faction2;
-            return base.CanFireNowSub(parms) && this.TryFindFaction(allowPerm, out faction) && this.TryFindFaction2(allowPerm, out faction2) && enableDiplo;
+            return base.CanFireNowSub(parms) && enableDiplo;
         }
 
-        private bool TryFindFaction(bool allowPerm, out Faction faction)
+        private bool TryFindFaction(bool allowPerm, bool excludeEmpire, out Faction faction)
         {
             if(allowPerm)
             {
+                if(excludeEmpire)
+                {
+                    return (from x in Find.FactionManager.AllFactions
+                            where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x.def != FactionDefOf.Empire
+                            select x).TryRandomElement(out faction);
+                }
                 return (from x in Find.FactionManager.AllFactions
                         where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f
                         select x).TryRandomElement(out faction);
             }
             else
             {
+                if (excludeEmpire)
+                {
+                    return (from x in Find.FactionManager.AllFactions
+                            where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x.def != FactionDefOf.Empire
+                            select x).TryRandomElement(out faction);
+                }
                 return (from x in Find.FactionManager.AllFactions
                         where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f
                         select x).TryRandomElement(out faction);
             }
         }
-        private bool TryFindFaction2(bool allowPerm, out Faction faction2)
+        private bool TryFindFaction2(bool allowPerm, bool excludeEmpire, Faction faction, out Faction faction2)
         {
             if (allowPerm)
             {
+                if (excludeEmpire)
+                {
+                    return (from x in Find.FactionManager.AllFactions
+                            where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && x.def != FactionDefOf.Empire
+                            select x).TryRandomElement(out faction2);
+                }
                 return (from x in Find.FactionManager.AllFactions
-                        where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f
+                        where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction
                         select x).TryRandomElement(out faction2);
             }
             else
             {
+                if (excludeEmpire)
+                {
+                    return (from x in Find.FactionManager.AllFactions
+                            where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && x.def != FactionDefOf.Empire
+                            select x).TryRandomElement(out faction2);
+                }
                 return (from x in Find.FactionManager.AllFactions
-                        where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f
+                        where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction
                         select x).TryRandomElement(out faction2);
             }
         }
@@ -57,45 +79,14 @@ namespace DynamicDiplomacy
 
             Faction faction;
             Faction faction2;
-            int reroll = 0;
 
-            if (!this.TryFindFaction(allowPerm, out faction))
+            if (!this.TryFindFaction(allowPerm, excludeEmpire, out faction))
             {
                 return false;
             }
-            if (!this.TryFindFaction2(allowPerm, out faction2))
+            if (!this.TryFindFaction2(allowPerm, excludeEmpire, faction, out faction2))
             {
                 return false;
-            }
-
-            // exclude same factions
-            while (faction == faction2)
-            {
-                Log.Message("same faction selected, reroll second faction");
-                this.TryFindFaction2(allowPerm, out faction2);
-                if (reroll > 10)
-                {
-                    Log.Message("Ten unsuccessful rerolls. Exit.");
-                    return false;
-                }
-                reroll++;
-            }
-
-            // exclude Empire depending on setting
-            if (excludeEmpire && (faction.def == FactionDefOf.Empire || faction2.def == FactionDefOf.Empire))
-            {
-                while (faction.def == FactionDefOf.Empire || faction2.def == FactionDefOf.Empire)
-                {                    
-                    Log.Message("Empire disallowed, reroll another faction");
-                    this.TryFindFaction(allowPerm, out faction);
-                    this.TryFindFaction2(allowPerm, out faction2);
-                    if (reroll > 10)
-                    {
-                        Log.Message("Ten unsuccessful rerolls. Exit.");
-                        return false;
-                    }
-                    reroll++;
-                }
             }
 
             if (faction.HostileTo(faction2))
