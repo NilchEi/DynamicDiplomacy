@@ -238,7 +238,6 @@ namespace DynamicDiplomacy
                 destroyedSettlement.Tile = FinalDefenderBase.Tile;
                 Find.WorldObjects.Remove(FinalDefenderBase);
                 Find.WorldObjects.Add(destroyedSettlement);
-                Find.LetterStack.ReceiveLetter("LabelConquestRaze".Translate(), "DescConquestRaze".Translate(FinalDefenderBase.Faction.Name, AttackerBase.Faction.Name), LetterDefOf.NeutralEvent, destroyedSettlement, null, null);
             }
             else
             {
@@ -448,7 +447,6 @@ namespace DynamicDiplomacy
                 settlement.Tile = tile;
                 settlement.Name = SettlementNameGenerator.GenerateSettlementName(settlement, null);
                 Find.WorldObjects.Add(settlement);
-                Find.LetterStack.ReceiveLetter("LabelExpansion".Translate(), "DescExpansion".Translate(SettlerBase.Faction.Name, SettlerBase.Name, settlement.Name), LetterDefOf.NeutralEvent, settlement, null, null);
             }
 
             return true;
