@@ -389,7 +389,6 @@ namespace DynamicDiplomacy
                 factionRelation.kind = FactionRelationKind.Neutral;
                 FactionRelation factionRelation2 = faction2.RelationWith(faction, false);
                 factionRelation2.kind = FactionRelationKind.Neutral;
-                Find.LetterStack.ReceiveLetter("LabelDCPeace".Translate(), "DescDCPeace".Translate(faction.Name, faction2.Name), LetterDefOf.NeutralEvent, null);
             }
             else
             {
@@ -397,7 +396,6 @@ namespace DynamicDiplomacy
                 factionRelation.kind = FactionRelationKind.Hostile;
                 FactionRelation factionRelation2 = faction2.RelationWith(faction, false);
                 factionRelation2.kind = FactionRelationKind.Hostile;
-                Find.LetterStack.ReceiveLetter("LabelDCWar".Translate(), "DescDCWar".Translate(faction.Name, faction2.Name), LetterDefOf.NeutralEvent, null);
             }
 
             return true;
