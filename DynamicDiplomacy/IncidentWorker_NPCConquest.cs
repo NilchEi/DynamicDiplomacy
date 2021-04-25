@@ -13,7 +13,6 @@ namespace DynamicDiplomacy
         public static bool allowAlliance;
         public static bool allowRazeClear;
         public static bool enableConquest;
-        public static bool enableNonHumanoidConquest;
         public static int defeatChance;
         public static int razeChance;
         protected override bool CanFireNowSub(IncidentParms parms)
