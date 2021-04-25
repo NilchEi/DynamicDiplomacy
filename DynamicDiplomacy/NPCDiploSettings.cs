@@ -29,6 +29,11 @@ namespace DynamicDiplomacy
             listing_Standard.Gap(16f);
             listing_Standard.CheckboxLabeled("RepEnableExpansionExp".Translate(), ref this.settings.repEnableExpansion, "RepEnableExpansionExpTip".Translate());
             listing_Standard.Gap(4f);
+            listing_Standard.Label("RepMaxExpansionLimitExp".Translate(this.settings.repMaxExpansionLimit.ToString()));
+            listing_Standard.Gap(2f);
+            string text = this.settings.repMaxExpansionLimit.ToString();
+            listing_Standard.TextFieldNumeric<int>(ref settings.repMaxExpansionLimit, ref text, 0f, 1E+09f);
+            listing_Standard.Gap(4f);
             listing_Standard.Label("RepExpansionRadiusExp".Translate(this.settings.repExpansionRadius.ToString()));
             listing_Standard.Gap(2f);
             this.settings.repExpansionRadius = (int)listing_Standard.Slider(this.settings.repExpansionRadius, 10f, 100f);
@@ -42,6 +47,8 @@ namespace DynamicDiplomacy
             listing_Standard.Label("RepRazeChanceExp".Translate(this.settings.repRazeChance.ToString()));
             listing_Standard.Gap(2f);
             this.settings.repRazeChance = (int)listing_Standard.Slider(this.settings.repRazeChance, 0f, 100f);
+            listing_Standard.Gap(4f);
+            listing_Standard.CheckboxLabeled("RepAllowRazeClearExp".Translate(), ref this.settings.repAllowRazeClear, null);
             listing_Standard.Gap(4f);
             listing_Standard.Label("RepDefeatChanceExp".Translate(this.settings.repDefeatChance.ToString()));
             listing_Standard.Gap(2f);

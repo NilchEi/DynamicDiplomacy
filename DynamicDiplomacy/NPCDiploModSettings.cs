@@ -17,8 +17,10 @@ namespace DynamicDiplomacy
             Scribe_Values.Look<int>(ref this.repGenerateHistoryLength, "repGenerateHistoryLength", 7500, false);
             Scribe_Values.Look<int>(ref this.repDefeatChance, "repDefeatChance", 0, false);
             Scribe_Values.Look<int>(ref this.repRazeChance, "repRazeChance", 0, false);
+            Scribe_Values.Look<bool>(ref this.repAllowRazeClear, "repAllowRazeClear", true, false);
             Scribe_Values.Look<bool>(ref this.repExcludeEmpire, "repExcludeEmpire", false, false);
             Scribe_Values.Look<int>(ref this.repExpansionRadius, "repExpansionRadius", 30, false);
+            Scribe_Values.Look<int>(ref this.repMaxExpansionLimit, "repMaxExpansionLimit", 200, false);
             base.ExposeData();
         }
 
@@ -31,8 +33,10 @@ namespace DynamicDiplomacy
         public int repGenerateHistoryLength = 7500;
         public int repDefeatChance = 0;
         public int repRazeChance = 0;
+        public bool repAllowRazeClear = true;
         public bool repExcludeEmpire = false;
         public bool repEnableExpansion = false;
         public int repExpansionRadius = 30;
+        public int repMaxExpansionLimit = 200;
     }
 }

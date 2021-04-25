@@ -11,7 +11,9 @@ namespace DynamicDiplomacy
     {
         public static bool allowDistanceCalc;
         public static bool allowAlliance;
+        public static bool allowRazeClear;
         public static bool enableConquest;
+        public static bool enableNonHumanoidConquest;
         public static int defeatChance;
         public static int razeChance;
         protected override bool CanFireNowSub(IncidentParms parms)
@@ -58,7 +60,7 @@ namespace DynamicDiplomacy
                 return false;
             }
 
-            if(!allowDistanceCalc)
+            if (!allowDistanceCalc)
             {
                 Settlement settlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
                 settlement.SetFaction((from x in Find.FactionManager.AllFactionsVisible
@@ -76,6 +78,15 @@ namespace DynamicDiplomacy
                     int razeroll = Rand.Range(1, 100);
                     if (razeroll <= razeChance)
                     {
+                        if(allowRazeClear)
+                        {
+                            List<DestroyedSettlement> clearRuinTarget = Find.WorldObjects.DestroyedSettlements;
+                            for (int i = 0; i < clearRuinTarget.Count; i++)
+                            {
+                                Find.WorldObjects.Remove(clearRuinTarget[i]);
+                            }
+                        }
+                        
                         DestroyedSettlement destroyedSettlement = (DestroyedSettlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.DestroyedSettlement);
                         destroyedSettlement.Tile = AttackerBase.Tile;
                         Find.WorldObjects.Remove(AttackerBase);
@@ -93,7 +104,7 @@ namespace DynamicDiplomacy
 
                     // Defeat check for random conquest
                     int defeatroll = Rand.Range(1, 100);
-                    if(defeatroll <= defeatChance && !HasAnyOtherBase(AttackerBase))
+                    if (defeatroll <= defeatChance && !HasAnyOtherBase(AttackerBase))
                     {
                         AttackerBase.Faction.defeated = true;
                         Find.LetterStack.ReceiveLetter("LetterLabelFactionBaseDefeated".Translate(), "LetterFactionBaseDefeated_FactionDestroyed".Translate(AttackerBase.Faction.Name), LetterDefOf.NeutralEvent, null);
@@ -174,9 +185,9 @@ namespace DynamicDiplomacy
                 }
 
                 // Rebellion code
-                if(!rebelCandidateBaseExist && (attackerBaseCount >= 20 || attackerBaseCount >= (totalBaseCount * 0.2)) && rebelFaction != null)
+                if (!rebelCandidateBaseExist && (attackerBaseCount >= 20 || attackerBaseCount >= (totalBaseCount * 0.2)) && rebelFaction != null)
                 {
-                    if(attackerBaseCount != 1)
+                    if (attackerBaseCount != 1)
                     {
                         for (int i = 0; i < attackerSettlementList.Count; i++)
                         {
@@ -248,6 +259,15 @@ namespace DynamicDiplomacy
                 int razeroll = Rand.Range(1, 100);
                 if (razeroll <= razeChance)
                 {
+                    if (allowRazeClear)
+                    {
+                        List<DestroyedSettlement> clearRuinTarget = Find.WorldObjects.DestroyedSettlements;
+                        for (int i = 0; i < clearRuinTarget.Count; i++)
+                        {
+                            Find.WorldObjects.Remove(clearRuinTarget[i]);
+                        }
+                    }
+
                     DestroyedSettlement destroyedSettlement = (DestroyedSettlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.DestroyedSettlement);
                     destroyedSettlement.Tile = FinalDefenderBase.Tile;
                     Find.WorldObjects.Remove(FinalDefenderBase);

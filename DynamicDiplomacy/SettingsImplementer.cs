@@ -12,6 +12,7 @@ namespace DynamicDiplomacy
             IncidentWorker_NPCDiploChange.enableDiplo = LoadedModManager.GetMod<NPCDiploSettings>().settings.repEnableDiplo;
             IncidentWorker_NPCConquest.enableConquest = LoadedModManager.GetMod<NPCDiploSettings>().settings.repEnableConquest;
             IncidentWorker_NPCExpansion.enableExpansion = LoadedModManager.GetMod<NPCDiploSettings>().settings.repEnableExpansion;
+            IncidentWorker_NPCExpansion.maxExpansionLimit = LoadedModManager.GetMod<NPCDiploSettings>().settings.repMaxExpansionLimit;
             IncidentWorker_NPCExpansion.expansionRadius = LoadedModManager.GetMod<NPCDiploSettings>().settings.repExpansionRadius;
             IncidentWorker_NPCDiploChange.allowPerm = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowPerm;
             IncidentWorker_NPCDiploChange.excludeEmpire = LoadedModManager.GetMod<NPCDiploSettings>().settings.repExcludeEmpire;
@@ -19,6 +20,7 @@ namespace DynamicDiplomacy
             IncidentWorker_NPCConquest.allowAlliance = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowAlliance;
             IncidentWorker_NPCConquest.defeatChance = LoadedModManager.GetMod<NPCDiploSettings>().settings.repDefeatChance;
             IncidentWorker_NPCConquest.razeChance = LoadedModManager.GetMod<NPCDiploSettings>().settings.repRazeChance;
+            IncidentWorker_NPCConquest.allowRazeClear = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowRazeClear;
             GameCondition_GenerateHistory.generateHistoryLength = LoadedModManager.GetMod<NPCDiploSettings>().settings.repGenerateHistoryLength;
         }
     }

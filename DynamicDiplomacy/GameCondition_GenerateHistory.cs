@@ -237,8 +237,10 @@ namespace DynamicDiplomacy
                 DestroyedSettlement destroyedSettlement = (DestroyedSettlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.DestroyedSettlement);
                 destroyedSettlement.Tile = FinalDefenderBase.Tile;
                 Find.WorldObjects.Remove(FinalDefenderBase);
-                Find.WorldObjects.Add(destroyedSettlement);
-                Find.LetterStack.ReceiveLetter("LabelConquestRaze".Translate(), "DescConquestRaze".Translate(FinalDefenderBase.Faction.Name, AttackerBase.Faction.Name), LetterDefOf.NeutralEvent, destroyedSettlement, null, null);
+                if(!IncidentWorker_NPCConquest.allowRazeClear)
+                {
+                    Find.WorldObjects.Add(destroyedSettlement);
+                }
             }
             else
             {
@@ -389,7 +391,6 @@ namespace DynamicDiplomacy
                 factionRelation.kind = FactionRelationKind.Neutral;
                 FactionRelation factionRelation2 = faction2.RelationWith(faction, false);
                 factionRelation2.kind = FactionRelationKind.Neutral;
-                Find.LetterStack.ReceiveLetter("LabelDCPeace".Translate(), "DescDCPeace".Translate(faction.Name, faction2.Name), LetterDefOf.NeutralEvent, null);
             }
             else
             {
@@ -397,7 +398,6 @@ namespace DynamicDiplomacy
                 factionRelation.kind = FactionRelationKind.Hostile;
                 FactionRelation factionRelation2 = faction2.RelationWith(faction, false);
                 factionRelation2.kind = FactionRelationKind.Hostile;
-                Find.LetterStack.ReceiveLetter("LabelDCWar".Translate(), "DescDCWar".Translate(faction.Name, faction2.Name), LetterDefOf.NeutralEvent, null);
             }
 
             return true;
@@ -411,6 +411,10 @@ namespace DynamicDiplomacy
                 return false;
             }
             List<Settlement> settlements = Find.WorldObjects.Settlements.ToList<Settlement>();
+            if (settlements.Count > IncidentWorker_NPCExpansion.maxExpansionLimit)
+            {
+                return false;
+            }
             List<Settlement> candidateSettlements = new List<Settlement>();
             for (int i = 0; i < settlements.Count; i++)
             {
@@ -450,7 +454,6 @@ namespace DynamicDiplomacy
                 settlement.Tile = tile;
                 settlement.Name = SettlementNameGenerator.GenerateSettlementName(settlement, null);
                 Find.WorldObjects.Add(settlement);
-                Find.LetterStack.ReceiveLetter("LabelExpansion".Translate(), "DescExpansion".Translate(SettlerBase.Faction.Name, SettlerBase.Name, settlement.Name), LetterDefOf.NeutralEvent, settlement, null, null);
             }
 
             return true;

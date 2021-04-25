@@ -10,6 +10,7 @@ namespace DynamicDiplomacy
     {
         public static bool enableExpansion;
         public static int expansionRadius;
+        public static int maxExpansionLimit;
 
         protected override bool CanFireNowSub(IncidentParms parms)
         {
@@ -29,6 +30,11 @@ namespace DynamicDiplomacy
                 return false;
             }
             List<Settlement> settlements = Find.WorldObjects.Settlements.ToList<Settlement>();
+            if(settlements.Count > maxExpansionLimit)
+            {
+                Log.Message("current settlememt count of " + settlements.Count.ToString() + " greater than max expansion limit of " + maxExpansionLimit.ToString());
+                return false;
+            }
             List<Settlement> candidateSettlements = new List<Settlement>();
             for (int i = 0; i < settlements.Count; i++)
             {
