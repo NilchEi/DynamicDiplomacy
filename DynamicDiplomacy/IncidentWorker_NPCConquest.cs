@@ -186,30 +186,27 @@ namespace DynamicDiplomacy
                 // Rebellion code
                 if (!rebelCandidateBaseExist && (attackerBaseCount >= 20 || attackerBaseCount >= (totalBaseCount * 0.2)) && rebelFaction != null)
                 {
-                    if (attackerBaseCount != 1)
+                    for (int i = 0; i < attackerSettlementList.Count; i++)
                     {
-                        for (int i = 0; i < attackerSettlementList.Count; i++)
+                        int num = Rand.Range(1, 100);
+                        bool resistancechance = num < 41;
+                        if (resistancechance)
                         {
-                            int num = Rand.Range(1, 100);
-                            bool resistancechance = num < 41;
-                            if (resistancechance)
-                            {
-                                Settlement rebelSettlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
-                                rebelSettlement.SetFaction(rebelFaction);
-                                rebelSettlement.Tile = attackerSettlementList[i].Tile;
-                                rebelSettlement.Name = SettlementNameGenerator.GenerateSettlementName(rebelSettlement, null);
-                                Find.WorldObjects.Remove(attackerSettlementList[i]);
-                                Find.WorldObjects.Add(rebelSettlement);
-                            }
+                            Settlement rebelSettlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
+                            rebelSettlement.SetFaction(rebelFaction);
+                            rebelSettlement.Tile = attackerSettlementList[i].Tile;
+                            rebelSettlement.Name = SettlementNameGenerator.GenerateSettlementName(rebelSettlement, null);
+                            Find.WorldObjects.Remove(attackerSettlementList[i]);
+                            Find.WorldObjects.Add(rebelSettlement);
                         }
-
-                        FactionRelation factionRelation = rebelFaction.RelationWith(AttackerBase.Faction, false);
-                        factionRelation.kind = FactionRelationKind.Hostile;
-                        FactionRelation factionRelation2 = AttackerBase.Faction.RelationWith(rebelFaction, false);
-                        factionRelation2.kind = FactionRelationKind.Hostile;
-                        Find.LetterStack.ReceiveLetter("LabelRebellion".Translate(), "DescRebellion".Translate(rebelFaction, AttackerBase.Faction), LetterDefOf.NeutralEvent, null);
-                        return true;
                     }
+
+                    FactionRelation factionRelation = rebelFaction.RelationWith(AttackerBase.Faction, false);
+                    factionRelation.kind = FactionRelationKind.Hostile;
+                    FactionRelation factionRelation2 = AttackerBase.Faction.RelationWith(rebelFaction, false);
+                    factionRelation2.kind = FactionRelationKind.Hostile;
+                    Find.LetterStack.ReceiveLetter("LabelRebellion".Translate(), "DescRebellion".Translate(rebelFaction, AttackerBase.Faction), LetterDefOf.NeutralEvent, null);
+                    return true;
                 }
 
                 // Conquest code
