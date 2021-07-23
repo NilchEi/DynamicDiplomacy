@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 
 namespace DynamicDiplomacy
@@ -9,6 +11,8 @@ namespace DynamicDiplomacy
         public static bool allowPerm;
         public static bool enableDiplo;
         public static bool excludeEmpire;
+        public static bool allowIdeoBloc;
+        public static int ideoSurrenderChance;
 
         protected override bool CanFireNowSub(IncidentParms parms)
         {
@@ -17,9 +21,9 @@ namespace DynamicDiplomacy
 
         private bool TryFindFaction(bool allowPerm, bool excludeEmpire, out Faction faction)
         {
-            if(allowPerm)
+            if (allowPerm)
             {
-                if(excludeEmpire)
+                if (excludeEmpire)
                 {
                     return (from x in Find.FactionManager.AllFactions
                             where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x.def != FactionDefOf.Empire
@@ -42,31 +46,61 @@ namespace DynamicDiplomacy
                         select x).TryRandomElement(out faction);
             }
         }
-        private bool TryFindFaction2(bool allowPerm, bool excludeEmpire, Faction faction, out Faction faction2)
+        private bool TryFindFaction2(bool allowIdeoBloc, bool allowPerm, bool excludeEmpire, Faction faction, out Faction faction2)
         {
-            if (allowPerm)
+            if (allowIdeoBloc && ModsConfig.IdeologyActive)
             {
-                if (excludeEmpire)
+                if (allowPerm)
                 {
+                    if (excludeEmpire)
+                    {
+                        return (from x in Find.FactionManager.AllFactions
+                                where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && x.def != FactionDefOf.Empire && (!x.ideos.Has(faction.ideos.PrimaryIdeo) || (x.ideos.Has(faction.ideos.PrimaryIdeo) && faction.HostileTo(x)))
+                                select x).TryRandomElement(out faction2);
+                    }
                     return (from x in Find.FactionManager.AllFactions
-                            where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && x.def != FactionDefOf.Empire
+                            where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && (!x.ideos.Has(faction.ideos.PrimaryIdeo) || (x.ideos.Has(faction.ideos.PrimaryIdeo) && faction.HostileTo(x)))
                             select x).TryRandomElement(out faction2);
                 }
-                return (from x in Find.FactionManager.AllFactions
-                        where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction
-                        select x).TryRandomElement(out faction2);
+                else
+                {
+                    if (excludeEmpire)
+                    {
+                        return (from x in Find.FactionManager.AllFactions
+                                where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && x.def != FactionDefOf.Empire && (!x.ideos.Has(faction.ideos.PrimaryIdeo) || (x.ideos.Has(faction.ideos.PrimaryIdeo) && faction.HostileTo(x)))
+                                select x).TryRandomElement(out faction2);
+                    }
+                    return (from x in Find.FactionManager.AllFactions
+                            where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && (!x.ideos.Has(faction.ideos.PrimaryIdeo) || (x.ideos.Has(faction.ideos.PrimaryIdeo) && faction.HostileTo(x)))
+                            select x).TryRandomElement(out faction2);
+                }
             }
             else
             {
-                if (excludeEmpire)
+                if (allowPerm)
                 {
+                    if (excludeEmpire)
+                    {
+                        return (from x in Find.FactionManager.AllFactions
+                                where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && x.def != FactionDefOf.Empire
+                                select x).TryRandomElement(out faction2);
+                    }
                     return (from x in Find.FactionManager.AllFactions
-                            where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && x.def != FactionDefOf.Empire
+                            where !x.def.hidden && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction
                             select x).TryRandomElement(out faction2);
                 }
-                return (from x in Find.FactionManager.AllFactions
-                        where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction
-                        select x).TryRandomElement(out faction2);
+                else
+                {
+                    if (excludeEmpire)
+                    {
+                        return (from x in Find.FactionManager.AllFactions
+                                where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction && x.def != FactionDefOf.Empire
+                                select x).TryRandomElement(out faction2);
+                    }
+                    return (from x in Find.FactionManager.AllFactions
+                            where !x.def.hidden && !x.def.permanentEnemy && !x.IsPlayer && !x.defeated && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def.settlementGenerationWeight > 0f && x != faction
+                            select x).TryRandomElement(out faction2);
+                }
             }
         }
 
@@ -84,7 +118,7 @@ namespace DynamicDiplomacy
             {
                 return false;
             }
-            if (!this.TryFindFaction2(allowPerm, excludeEmpire, faction, out faction2))
+            if (!this.TryFindFaction2(allowIdeoBloc, allowPerm, excludeEmpire, faction, out faction2))
             {
                 return false;
             }
@@ -95,6 +129,44 @@ namespace DynamicDiplomacy
                 factionRelation.kind = FactionRelationKind.Neutral;
                 FactionRelation factionRelation2 = faction2.RelationWith(faction, false);
                 factionRelation2.kind = FactionRelationKind.Neutral;
+
+                // ideological surrender
+                if (ModsConfig.IdeologyActive)
+                {
+                    int ideosurrenderroll = Rand.Range(1, 100);
+                    if (ideosurrenderroll <= ideoSurrenderChance)
+                    {
+                        List<Settlement> settlements = Find.WorldObjects.Settlements.ToList<Settlement>();
+                        double faction1count = 0;
+                        double faction2count = 0;
+
+                        for (int i = 0; i < settlements.Count; i++)
+                        {
+                            if (faction == settlements[i].Faction)
+                            {
+                                faction1count++;
+                            }
+                            if (faction2 == settlements[i].Faction)
+                            {
+                                faction2count++;
+                            }
+                        }
+
+                        if (faction1count >= (faction2count * 2) && faction1count > 4)
+                        {
+                            faction2.ideos.SetPrimary(faction.ideos.PrimaryIdeo);
+                            Find.LetterStack.ReceiveLetter("LabelDDSurrender".Translate(), "DescDDSurrender".Translate(faction.Name, faction2.Name, faction.ideos.PrimaryIdeo.ToString()), LetterDefOf.NeutralEvent, null);
+                            return true;
+                        }
+                        else if (faction2count >= (faction1count * 2) && faction2count > 4)
+                        {
+                            faction.ideos.SetPrimary(faction2.ideos.PrimaryIdeo);
+                            Find.LetterStack.ReceiveLetter("LabelDDSurrender".Translate(), "DescDDSurrender".Translate(faction2.Name, faction.Name, faction2.ideos.PrimaryIdeo.ToString()), LetterDefOf.NeutralEvent, null);
+                            return true;
+                        }
+                    }
+                }
+
                 Find.LetterStack.ReceiveLetter("LabelDCPeace".Translate(), "DescDCPeace".Translate(faction.Name, faction2.Name), LetterDefOf.NeutralEvent, null);
             }
             else

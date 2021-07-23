@@ -14,9 +14,12 @@ namespace DynamicDiplomacy
             Scribe_Values.Look<bool>(ref this.repAllowPerm, "repAllowPerm", true, false);
             Scribe_Values.Look<bool>(ref this.repAllowDistanceCalc, "repAllowDistanceCalc", false, false);
             Scribe_Values.Look<bool>(ref this.repAllowAlliance, "repAllowAlliance", false, false);
-            Scribe_Values.Look<int>(ref this.repGenerateHistoryLength, "repGenerateHistoryLength", 7500, false);
+            Scribe_Values.Look<bool>(ref this.repAllowIdeoBloc, "repAllowIdeoBloc", true, false);
+            Scribe_Values.Look<bool>(ref this.repAllowConvert, "repAllowDDConvert", true, false);
+            Scribe_Values.Look<int>(ref this.repGenerateHistoryLength, "repGenerateHistoryLength", 5000, false);
             Scribe_Values.Look<int>(ref this.repDefeatChance, "repDefeatChance", 0, false);
             Scribe_Values.Look<int>(ref this.repRazeChance, "repRazeChance", 0, false);
+            Scribe_Values.Look<int>(ref this.repIdeoSurrenderChance, "repIdeoSurrenderChance", 0, false);
             Scribe_Values.Look<bool>(ref this.repAllowRazeClear, "repAllowRazeClear", true, false);
             Scribe_Values.Look<bool>(ref this.repExcludeEmpire, "repExcludeEmpire", false, false);
             Scribe_Values.Look<int>(ref this.repExpansionRadius, "repExpansionRadius", 30, false);
@@ -30,9 +33,12 @@ namespace DynamicDiplomacy
         public bool repAllowPerm = true;
         public bool repAllowDistanceCalc = false;
         public bool repAllowAlliance = false;
-        public int repGenerateHistoryLength = 7500;
+        public bool repAllowIdeoBloc = true;
+        public bool repAllowConvert = true;
+        public int repGenerateHistoryLength = 5000;
         public int repDefeatChance = 0;
         public int repRazeChance = 0;
+        public int repIdeoSurrenderChance = 0;
         public bool repAllowRazeClear = true;
         public bool repExcludeEmpire = false;
         public bool repEnableExpansion = false;

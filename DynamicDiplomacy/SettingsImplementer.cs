@@ -16,6 +16,9 @@ namespace DynamicDiplomacy
             IncidentWorker_NPCExpansion.expansionRadius = LoadedModManager.GetMod<NPCDiploSettings>().settings.repExpansionRadius;
             IncidentWorker_NPCDiploChange.allowPerm = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowPerm;
             IncidentWorker_NPCDiploChange.excludeEmpire = LoadedModManager.GetMod<NPCDiploSettings>().settings.repExcludeEmpire;
+            IncidentWorker_NPCDiploChange.allowIdeoBloc = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowIdeoBloc;
+            IncidentWorker_NPCDiploChange.ideoSurrenderChance = LoadedModManager.GetMod<NPCDiploSettings>().settings.repIdeoSurrenderChance;
+            IncidentWorker_NPCConvert.enableConvert = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowConvert;
             IncidentWorker_NPCConquest.allowDistanceCalc = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowDistanceCalc;
             IncidentWorker_NPCConquest.allowAlliance = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowAlliance;
             IncidentWorker_NPCConquest.defeatChance = LoadedModManager.GetMod<NPCDiploSettings>().settings.repDefeatChance;

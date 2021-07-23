@@ -58,6 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="incidentWorker_NPCConvert.cs" />
     <Compile Include="DiplomacyWorldComponent.cs" />
     <Compile Include="GameConditionDefOfLocal.cs" />
     <Compile Include="GameCondition_GenerateHistory.cs" />

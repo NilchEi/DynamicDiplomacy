@@ -17,9 +17,10 @@ namespace DynamicDiplomacy
         // Token: 0x0600000D RID: 13 RVA: 0x00002574 File Offset: 0x00000774
         public override void DoSettingsWindowContents(Rect inRect)
         {
-            Rect viewRect = new Rect(0f, 0f, inRect.width - 16f, inRect.height + 200f);
+            Rect viewRect = new Rect(0f, 0f, inRect.width - 16f, inRect.height + 250f);
             Listing_Standard listing_Standard = new Listing_Standard();
-            listing_Standard.BeginScrollView(inRect, ref scrollPosition, ref viewRect);
+            Widgets.BeginScrollView(inRect, ref scrollPosition, viewRect);
+            listing_Standard.Begin(viewRect);
             Text.Font = GameFont.Tiny;
             listing_Standard.Label("NPCRestartWarning".Translate(), -1f, null);
             Text.Font = GameFont.Small;
@@ -29,6 +30,10 @@ namespace DynamicDiplomacy
             listing_Standard.CheckboxLabeled("RepAllowPermExp".Translate(), ref this.settings.repAllowPerm, null);
             listing_Standard.Gap(4f);
             listing_Standard.CheckboxLabeled("RepExcludeEmpireExp".Translate(), ref this.settings.repExcludeEmpire, null);
+            listing_Standard.Gap(4f);
+            listing_Standard.CheckboxLabeled("RepAllowIdeoBlocExp".Translate(), ref this.settings.repAllowIdeoBloc, "RepAllowIdeoBlocExpTip".Translate());
+            listing_Standard.Gap(4f);
+            listing_Standard.CheckboxLabeled("RepAllowDDConvertExp".Translate(), ref this.settings.repAllowConvert, "RepAllowDDConvertExpTip".Translate());
             listing_Standard.Gap(16f);
             listing_Standard.CheckboxLabeled("RepEnableExpansionExp".Translate(), ref this.settings.repEnableExpansion, "RepEnableExpansionExpTip".Translate());
             listing_Standard.Gap(4f);
@@ -57,10 +62,15 @@ namespace DynamicDiplomacy
             listing_Standard.Gap(2f);
             this.settings.repDefeatChance = (int)listing_Standard.Slider(this.settings.repDefeatChance, 0f, 100f);
             listing_Standard.Gap(4f);
+            listing_Standard.Label("RepIdeoSurrenderChanceExp".Translate(this.settings.repIdeoSurrenderChance), -1, "RepIdeoSurrenderChanceExpTip".Translate(this.settings.repIdeoSurrenderChance));
+            listing_Standard.Gap(2f);
+            this.settings.repIdeoSurrenderChance = (int)listing_Standard.Slider(this.settings.repIdeoSurrenderChance, 0f, 100f);
+            listing_Standard.Gap(16f);
             listing_Standard.Label("RepGenerateHistoryLengthExp".Translate() + this.settings.repGenerateHistoryLength.ToString());
             listing_Standard.Gap(2f);
             listing_Standard.IntAdjuster(ref this.settings.repGenerateHistoryLength, 2500, 2500);
-            listing_Standard.EndScrollView(ref viewRect);
+            listing_Standard.End();
+            Widgets.EndScrollView();
             base.DoSettingsWindowContents(inRect);
         }
 
