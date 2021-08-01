@@ -152,15 +152,17 @@ namespace DynamicDiplomacy
                             }
                         }
 
-                        if (faction1count >= (faction2count * 2) && faction1count > 4)
+                        if (faction1count >= (faction2count * 3) && faction1count > 4)
                         {
                             faction2.ideos.SetPrimary(faction.ideos.PrimaryIdeo);
+                            faction2.leader.ideo.SetIdeo(faction.ideos.PrimaryIdeo);
                             Find.LetterStack.ReceiveLetter("LabelDDSurrender".Translate(), "DescDDSurrender".Translate(faction.Name, faction2.Name, faction.ideos.PrimaryIdeo.ToString()), LetterDefOf.NeutralEvent, null);
                             return true;
                         }
-                        else if (faction2count >= (faction1count * 2) && faction2count > 4)
+                        else if (faction2count >= (faction1count * 3) && faction2count > 4)
                         {
                             faction.ideos.SetPrimary(faction2.ideos.PrimaryIdeo);
+                            faction.leader.ideo.SetIdeo(faction2.ideos.PrimaryIdeo);
                             Find.LetterStack.ReceiveLetter("LabelDDSurrender".Translate(), "DescDDSurrender".Translate(faction2.Name, faction.Name, faction2.ideos.PrimaryIdeo.ToString()), LetterDefOf.NeutralEvent, null);
                             return true;
                         }

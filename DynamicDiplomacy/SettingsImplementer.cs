@@ -24,6 +24,7 @@ namespace DynamicDiplomacy
             IncidentWorker_NPCConquest.defeatChance = LoadedModManager.GetMod<NPCDiploSettings>().settings.repDefeatChance;
             IncidentWorker_NPCConquest.razeChance = LoadedModManager.GetMod<NPCDiploSettings>().settings.repRazeChance;
             IncidentWorker_NPCConquest.allowRazeClear = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowRazeClear;
+            IncidentWorker_NPCConquest.allowCloneFaction = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowCloneFaction;
             GameCondition_GenerateHistory.generateHistoryLength = LoadedModManager.GetMod<NPCDiploSettings>().settings.repGenerateHistoryLength;
         }
     }

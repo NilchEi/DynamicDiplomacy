@@ -1,6 +1,7 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Verse;
 
 namespace DynamicDiplomacy
@@ -47,12 +48,22 @@ namespace DynamicDiplomacy
                         if (eachIdeo.HasMeme(eachmeme) && eachIdeo != faction.ideos.PrimaryIdeo)
                         {
                             List<Faction> proselytizer = (from x in Find.FactionManager.AllFactionsVisible
-                                                          where !x.def.hidden && !x.defeated && x != faction && !x.HostileTo(faction) && x.ideos.PrimaryIdeo == eachIdeo
+                                                          where !x.def.hidden && (!x.IsPlayer || faction.RelationKindWith(Faction.OfPlayer) == FactionRelationKind.Ally) && !x.defeated && x != faction && !x.HostileTo(faction) && x.ideos.PrimaryIdeo == eachIdeo
                                                           select x).ToList<Faction>();
+
+                            for (int x = 0; x < proselytizer.Count; x++)
+                            {
+                                Faction temp = proselytizer[x];
+                                int randomIndex = Random.Range(x, proselytizer.Count);
+                                proselytizer[x] = proselytizer[randomIndex];
+                                proselytizer[randomIndex] = temp;
+                            }
+
                             if (proselytizer.Count > 0)
                             {
                                 faction.ideos.SetPrimary(eachIdeo);
                                 Find.IdeoManager.RemoveUnusedStartingIdeos();
+                                faction.leader.ideo.SetIdeo(eachIdeo);
                                 Find.LetterStack.ReceiveLetter("LabelDDProselytization".Translate(), "DescDDProselytization".Translate(faction.Name, eachIdeo.name, proselytizer.RandomElement<Faction>().Name, eachmeme.label), LetterDefOf.NeutralEvent);
                                 return true;
                             }
@@ -65,6 +76,7 @@ namespace DynamicDiplomacy
             Ideo newIdeo = IdeoGenerator.GenerateIdeo(FactionIdeosTracker.IdeoGenerationParmsForFaction_BackCompatibility(faction.def));
             faction.ideos.SetPrimary(newIdeo);
             Find.IdeoManager.Add(newIdeo);
+            faction.leader.ideo.SetIdeo(newIdeo);
             Find.IdeoManager.RemoveUnusedStartingIdeos();
             Find.LetterStack.ReceiveLetter("LabelDDFoundation".Translate(), "DescDDFoundation".Translate(faction.Name, newIdeo.name), LetterDefOf.NeutralEvent);
 

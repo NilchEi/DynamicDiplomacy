@@ -16,6 +16,7 @@ namespace DynamicDiplomacy
             Scribe_Values.Look<bool>(ref this.repAllowAlliance, "repAllowAlliance", false, false);
             Scribe_Values.Look<bool>(ref this.repAllowIdeoBloc, "repAllowIdeoBloc", true, false);
             Scribe_Values.Look<bool>(ref this.repAllowConvert, "repAllowDDConvert", true, false);
+            Scribe_Values.Look<bool>(ref this.repAllowCloneFaction, "repAllowCloneFaction", false, false);
             Scribe_Values.Look<int>(ref this.repGenerateHistoryLength, "repGenerateHistoryLength", 5000, false);
             Scribe_Values.Look<int>(ref this.repDefeatChance, "repDefeatChance", 0, false);
             Scribe_Values.Look<int>(ref this.repRazeChance, "repRazeChance", 0, false);
@@ -35,6 +36,7 @@ namespace DynamicDiplomacy
         public bool repAllowAlliance = false;
         public bool repAllowIdeoBloc = true;
         public bool repAllowConvert = true;
+        public bool repAllowCloneFaction = false;
         public int repGenerateHistoryLength = 5000;
         public int repDefeatChance = 0;
         public int repRazeChance = 0;

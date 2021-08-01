@@ -3,6 +3,7 @@ using RimWorld.Planet;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 using Verse;
 
 namespace DynamicDiplomacy
@@ -13,6 +14,7 @@ namespace DynamicDiplomacy
         public static bool allowAlliance;
         public static bool allowRazeClear;
         public static bool enableConquest;
+        public static bool allowCloneFaction;
         public static int defeatChance;
         public static int razeChance;
         protected override bool CanFireNowSub(IncidentParms parms)
@@ -40,6 +42,21 @@ namespace DynamicDiplomacy
             }
             return false;
         }
+
+        public static bool HasAnyOtherBase(Faction defeatedFaction)
+        {
+            List<Settlement> settlements = Find.WorldObjects.Settlements;
+            for (int i = 0; i < settlements.Count; i++)
+            {
+                Settlement settlement = settlements[i];
+                if (settlement.Faction == defeatedFaction)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
@@ -91,6 +108,7 @@ namespace DynamicDiplomacy
                         Find.WorldObjects.Remove(AttackerBase);
                         Find.WorldObjects.Add(destroyedSettlement);
                         Find.LetterStack.ReceiveLetter("LabelConquestRaze".Translate(), "DescConquestRaze".Translate(AttackerBase.Faction.Name, settlement.Faction.Name), LetterDefOf.NeutralEvent, destroyedSettlement, null, null);
+                        ExpandableWorldObjectsUtility.ExpandableWorldObjectsUpdate();
                     }
                     else
                     {
@@ -102,6 +120,18 @@ namespace DynamicDiplomacy
                     }
 
                     // Defeat check for random conquest
+                    if(allowCloneFaction && !HasAnyOtherBase(AttackerBase))
+                    {
+                        List<Faction> clonefactioncheck = (from x in Find.FactionManager.AllFactionsVisible
+                                                      where !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerBase.Faction && x.def == AttackerBase.Faction.def
+                                                      select x).ToList<Faction>();
+                        if(clonefactioncheck.Count > 0)
+                        {
+                            AttackerBase.Faction.defeated = true;
+                            Find.LetterStack.ReceiveLetter("LetterLabelFactionBaseDefeated".Translate(), "LetterFactionBaseDefeated_FactionDestroyed".Translate(AttackerBase.Faction.Name), LetterDefOf.NeutralEvent, null);
+                        }
+                    }
+
                     int defeatroll = Rand.Range(1, 100);
                     if (defeatroll <= defeatChance && !HasAnyOtherBase(AttackerBase))
                     {
@@ -125,20 +155,12 @@ namespace DynamicDiplomacy
                 double attackerBaseCount = 0;
                 double totalBaseCount = 0;
 
-                Faction rebelFaction = (from x in Find.FactionManager.AllFactionsVisible
-                                        where x.def.settlementGenerationWeight > 0f && !x.def.hidden && !x.IsPlayer && !x.defeated
-                                        select x).RandomElementWithFallback<Faction>();
-                bool rebelCandidateBaseExist = false;
                 List<Settlement> attackerSettlementList = new List<Settlement>();
 
                 for (int i = 0; i < settlements.Count; i++)
                 {
                     Settlement DefenderBase = settlements[i];
 
-                    if (!rebelCandidateBaseExist && DefenderBase.Faction == rebelFaction)
-                    {
-                        rebelCandidateBaseExist = true;
-                    }
                     if (DefenderBase.Faction == AttackerBase.Faction)
                     {
                         attackerBaseCount++;
@@ -184,29 +206,77 @@ namespace DynamicDiplomacy
                 }
 
                 // Rebellion code
-                if (!rebelCandidateBaseExist && (attackerBaseCount >= 20 || attackerBaseCount >= (totalBaseCount * 0.2)) && rebelFaction != null)
+                if (attackerBaseCount >= 10 && attackerBaseCount >= (totalBaseCount * 0.1))
                 {
-                    for (int i = 0; i < attackerSettlementList.Count; i++)
+                    int num = Rand.Range(1, 100);
+                    if (num <= (int)(attackerBaseCount / totalBaseCount * 20) || attackerBaseCount >= (totalBaseCount * 0.8))
                     {
-                        int num = Rand.Range(1, 100);
-                        bool resistancechance = num < 41;
-                        if (resistancechance)
+                        List<Faction> allFactionList = (from x in Find.FactionManager.AllFactionsVisible
+                                                  where x.def.settlementGenerationWeight > 0f && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned
+                                                  select x).ToList<Faction>();
+                        for (int i = 0; i < allFactionList.Count; i++)
                         {
-                            Settlement rebelSettlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
-                            rebelSettlement.SetFaction(rebelFaction);
-                            rebelSettlement.Tile = attackerSettlementList[i].Tile;
-                            rebelSettlement.Name = SettlementNameGenerator.GenerateSettlementName(rebelSettlement, null);
-                            Find.WorldObjects.Remove(attackerSettlementList[i]);
-                            Find.WorldObjects.Add(rebelSettlement);
+                            if(!HasAnyOtherBase(allFactionList[i]))
+                            {
+                                for (int j = 0; j < attackerSettlementList.Count; j++)
+                                {
+                                    int num2 = Rand.Range(1, 100);
+                                    bool resistancechance = num2 < 31;
+                                    if (resistancechance)
+                                    {
+                                        Settlement rebelSettlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
+                                        rebelSettlement.SetFaction(allFactionList[i]);
+                                        rebelSettlement.Tile = attackerSettlementList[j].Tile;
+                                        rebelSettlement.Name = SettlementNameGenerator.GenerateSettlementName(rebelSettlement, null);
+                                        Find.WorldObjects.Remove(attackerSettlementList[j]);
+                                        Find.WorldObjects.Add(rebelSettlement);
+                                    }
+                                }
+
+                                FactionRelation factionRelation = allFactionList[i].RelationWith(AttackerBase.Faction, false);
+                                factionRelation.kind = FactionRelationKind.Hostile;
+                                FactionRelation factionRelation2 = AttackerBase.Faction.RelationWith(allFactionList[i], false);
+                                factionRelation2.kind = FactionRelationKind.Hostile;
+                                Find.LetterStack.ReceiveLetter("LabelRebellion".Translate(), "DescRebellion".Translate(allFactionList[i], AttackerBase.Faction), LetterDefOf.NeutralEvent, null);
+                                return true;
+                            }
+                        }
+
+                        if (IncidentWorker_NPCConquest.allowCloneFaction && AttackerFaction != Faction.OfEmpire)
+                        {
+                            Faction clonefaction = FactionGenerator.NewGeneratedFaction(new FactionGeneratorParms(AttackerFaction.def, default(IdeoGenerationParms), null));
+                            clonefaction.color = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
+                            Find.FactionManager.Add(clonefaction);
+
+                            for (int i = 0; i < attackerSettlementList.Count; i++)
+                            {
+                                int num3 = Rand.Range(1, 100);
+                                bool resistancechance = num3 < 41;
+                                if (resistancechance)
+                                {
+                                    Settlement rebelSettlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
+                                    rebelSettlement.SetFaction(clonefaction);
+                                    rebelSettlement.Tile = attackerSettlementList[i].Tile;
+                                    rebelSettlement.Name = SettlementNameGenerator.GenerateSettlementName(rebelSettlement, null);
+                                    Find.WorldObjects.Remove(attackerSettlementList[i]);
+                                    Find.WorldObjects.Add(rebelSettlement);
+                                }
+                            }
+
+                            FactionRelation factionRelation = clonefaction.RelationWith(AttackerBase.Faction, false);
+                            factionRelation.kind = FactionRelationKind.Hostile;
+                            FactionRelation factionRelation2 = AttackerBase.Faction.RelationWith(clonefaction, false);
+                            factionRelation2.kind = FactionRelationKind.Hostile;
+
+                            Ideo newIdeo = IdeoGenerator.GenerateIdeo(FactionIdeosTracker.IdeoGenerationParmsForFaction_BackCompatibility(clonefaction.def));
+                            clonefaction.ideos.SetPrimary(newIdeo);
+                            Find.IdeoManager.Add(newIdeo);
+                            clonefaction.leader.ideo.SetIdeo(newIdeo);
+
+                            Find.LetterStack.ReceiveLetter("LabelRebellion".Translate(), "DescRebellion".Translate(clonefaction, AttackerBase.Faction), LetterDefOf.NeutralEvent, null);
+                            return true;
                         }
                     }
-
-                    FactionRelation factionRelation = rebelFaction.RelationWith(AttackerBase.Faction, false);
-                    factionRelation.kind = FactionRelationKind.Hostile;
-                    FactionRelation factionRelation2 = AttackerBase.Faction.RelationWith(rebelFaction, false);
-                    factionRelation2.kind = FactionRelationKind.Hostile;
-                    Find.LetterStack.ReceiveLetter("LabelRebellion".Translate(), "DescRebellion".Translate(rebelFaction, AttackerBase.Faction), LetterDefOf.NeutralEvent, null);
-                    return true;
                 }
 
                 // Conquest code
@@ -269,6 +339,7 @@ namespace DynamicDiplomacy
                     Find.WorldObjects.Remove(FinalDefenderBase);
                     Find.WorldObjects.Add(destroyedSettlement);
                     Find.LetterStack.ReceiveLetter("LabelConquestRaze".Translate(), "DescConquestRaze".Translate(FinalDefenderBase.Faction.Name, AttackerBase.Faction.Name), LetterDefOf.NeutralEvent, destroyedSettlement, null, null);
+                    ExpandableWorldObjectsUtility.ExpandableWorldObjectsUpdate();
                 }
                 else
                 {
@@ -282,6 +353,18 @@ namespace DynamicDiplomacy
                 }
 
                 // Defeat check for distance conquest
+                if (allowCloneFaction && !HasAnyOtherBase(FinalDefenderBase))
+                {
+                    List<Faction> clonefactioncheck = (from x in Find.FactionManager.AllFactionsVisible
+                                                       where !x.def.hidden && !x.IsPlayer && !x.defeated && x != FinalDefenderBase.Faction && x.def == FinalDefenderBase.Faction.def
+                                                       select x).ToList<Faction>();
+                    if (clonefactioncheck.Count > 0)
+                    {
+                        FinalDefenderBase.Faction.defeated = true;
+                        Find.LetterStack.ReceiveLetter("LetterLabelFactionBaseDefeated".Translate(), "LetterFactionBaseDefeated_FactionDestroyed".Translate(FinalDefenderBase.Faction.Name), LetterDefOf.NeutralEvent, null);
+                    }
+                }
+
                 int defeatroll = Rand.Range(1, 100);
                 if (defeatroll <= defeatChance && !HasAnyOtherBase(FinalDefenderBase))
                 {

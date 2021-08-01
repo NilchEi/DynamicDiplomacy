@@ -75,6 +75,7 @@ namespace DynamicDiplomacy
                 settlement.Name = SettlementNameGenerator.GenerateSettlementName(settlement, null);
                 Find.WorldObjects.Add(settlement);
                 Find.LetterStack.ReceiveLetter("LabelExpansion".Translate(), "DescExpansion".Translate(SettlerBase.Faction.Name, SettlerBase.Name, settlement.Name), LetterDefOf.NeutralEvent, settlement, null, null);
+                ExpandableWorldObjectsUtility.ExpandableWorldObjectsUpdate();
             }
 
             return true;
