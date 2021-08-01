@@ -34,6 +34,8 @@ namespace DynamicDiplomacy
             listing_Standard.CheckboxLabeled("RepAllowIdeoBlocExp".Translate(), ref this.settings.repAllowIdeoBloc, "RepAllowIdeoBlocExpTip".Translate());
             listing_Standard.Gap(4f);
             listing_Standard.CheckboxLabeled("RepAllowDDConvertExp".Translate(), ref this.settings.repAllowConvert, "RepAllowDDConvertExpTip".Translate());
+            listing_Standard.Gap(4f);
+            listing_Standard.CheckboxLabeled("RepAllowCloneFactionExp".Translate(), ref this.settings.repAllowCloneFaction, "RepAllowCloneFactionExpTip".Translate());
             listing_Standard.Gap(16f);
             listing_Standard.CheckboxLabeled("RepEnableExpansionExp".Translate(), ref this.settings.repEnableExpansion, "RepEnableExpansionExpTip".Translate());
             listing_Standard.Gap(4f);

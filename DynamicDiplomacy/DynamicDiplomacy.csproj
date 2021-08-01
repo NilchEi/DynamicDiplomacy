@@ -73,6 +73,7 @@
   <ItemGroup>
     <Content Include="Resources\0Harmony.dll" />
     <Content Include="Resources\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.dll" />
+    <Content Include="Resources\UnityEngine.CoreModule.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
