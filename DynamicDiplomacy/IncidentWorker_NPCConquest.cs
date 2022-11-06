@@ -1,10 +1,11 @@
 ﻿using RimWorld;
 using RimWorld.Planet;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
 using Verse;
+using Verse.AI.Group;
 
 namespace DynamicDiplomacy
 {
@@ -17,6 +18,9 @@ namespace DynamicDiplomacy
         public static bool allowCloneFaction;
         public static int defeatChance;
         public static int razeChance;
+        public static bool allowSimulatedConquest;
+        public static float simulatedConquestThreatPoint;
+
         protected override bool CanFireNowSub(IncidentParms parms)
         {
             return base.CanFireNowSub(parms) && RandomSettlement() != null && enableConquest;
@@ -57,6 +61,67 @@ namespace DynamicDiplomacy
             return false;
         }
 
+        public static void BeginArenaFight(List<PawnKindDef> lhs, List<PawnKindDef> rhs, Faction baseAttacker, Faction baseDefender, Settlement combatLoc)
+        {
+            MapParent mapParent = (MapParent)WorldObjectMaker.MakeWorldObject(WorldObjectDefOfLocal.NPCArena);
+            mapParent.Tile = TileFinder.RandomSettlementTileFor(Faction.OfPlayer, true, (int tile) => lhs.Concat(rhs).Any((PawnKindDef pawnkind) => Find.World.tileTemperatures.SeasonAndOutdoorTemperatureAcceptableFor(tile, pawnkind.race)));
+            mapParent.SetFaction(Faction.OfPlayer);
+            Find.WorldObjects.Add(mapParent);
+            Map orGenerateMap = GetOrGenerateMapUtility.GetOrGenerateMap(mapParent.Tile, new IntVec3(100, 1, 100), null);
+            IntVec3 spot;
+            IntVec3 spot2;
+            MultipleCaravansCellFinder.FindStartingCellsFor2Groups(orGenerateMap, out spot, out spot2);
+            List<Pawn> lhs2 = SpawnPawnSet(orGenerateMap, lhs, spot, baseAttacker);
+            List<Pawn> rhs2 = SpawnPawnSet(orGenerateMap, rhs, spot2, baseDefender);
+            DebugArena component = mapParent.GetComponent<DebugArena>();
+            component.lhs = lhs2;
+            component.rhs = rhs2;
+            component.attackerFaction = baseAttacker;
+            component.defenderFaction = baseDefender;
+            component.combatLoc = combatLoc;
+            Find.LetterStack.ReceiveLetter("LabelConquestBattleStart".Translate(combatLoc.Name), "DescConquestBattleStart".Translate(baseAttacker.Name, baseDefender.Name, combatLoc.Name), LetterDefOf.NeutralEvent, combatLoc, null, null); ;
+        }
+
+        public static List<Pawn> SpawnPawnSet(Map map, List<PawnKindDef> kinds, IntVec3 spot, Faction faction)
+        {
+            List<Pawn> list = new List<Pawn>();
+            for (int i = 0; i < kinds.Count; i++)
+            {
+                Pawn pawn = PawnGenerator.GeneratePawn(kinds[i], faction);
+                pawn.relations.ClearAllRelations();
+                IntVec3 loc = CellFinder.RandomClosewalkCellNear(spot, map, 12, null);
+                GenSpawn.Spawn(pawn, loc, map, Rot4.Random, WipeMode.Vanish, false);
+                list.Add(pawn);
+            }
+            LordMaker.MakeNewLord(faction, new LordJob_DefendPoint(map.Center), map, list);
+            return list;
+        }
+
+        public void ConquestGroupGeneration(Faction baseAttacker, Faction baseDefender, Settlement combatLoc)
+        {
+            List<PawnKindDef> attackerUnits = new List<PawnKindDef>();
+            List<PawnKindDef> defenderUnits = new List<PawnKindDef>();
+
+            float threatpoint = simulatedConquestThreatPoint;
+            PawnKindDef attUnit = baseAttacker.RandomPawnKind();
+            while (threatpoint > attUnit.combatPower)
+            {
+                attackerUnits.Add(attUnit);
+                threatpoint -= attUnit.combatPower;
+                attUnit = baseAttacker.RandomPawnKind();
+            }
+
+            float threatpoint2 = simulatedConquestThreatPoint;
+            PawnKindDef defUnit = baseDefender.RandomPawnKind();
+            while (threatpoint2 > defUnit.combatPower)
+            {
+                defenderUnits.Add(defUnit);
+                threatpoint2 -= defUnit.combatPower;
+                defUnit = baseDefender.RandomPawnKind();
+            }
+
+            BeginArenaFight(attackerUnits, defenderUnits, baseAttacker, baseDefender, combatLoc);
+        }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
@@ -78,18 +143,32 @@ namespace DynamicDiplomacy
 
             if (!allowDistanceCalc)
             {
+                if (AttackerBase.HasMap)
+                {
+                    Log.Message("attack target has generated map. Event dropped.");
+                    return false;
+                }
+
                 Settlement settlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
                 settlement.SetFaction((from x in Find.FactionManager.AllFactionsVisible
                                        where x.def.settlementGenerationWeight > 0f && x.HostileTo(AttackerFaction) && !x.def.hidden && !x.IsPlayer && !x.defeated
                                        select x).RandomElement<Faction>());
                 bool flag3 = settlement.Faction == null;
-                if (flag3 || settlement.HasMap)
+                if (flag3)
                 {
-                    Log.Message("attack target has generated map. Event dropped.");
                     return false;
                 }
                 else
                 {
+                    // generate battlefield setting
+                    if (allowSimulatedConquest)
+                    {
+                        Faction baseAttacker = settlement.Faction;
+                        Faction baseDefender = AttackerFaction;
+                        ConquestGroupGeneration(baseAttacker, baseDefender, AttackerBase);
+                        return true;
+                    }
+
                     // Determine whether to raze or take control, random-based
                     int razeroll = Rand.Range(1, 100);
                     if (razeroll <= razeChance)
@@ -222,7 +301,7 @@ namespace DynamicDiplomacy
                                 {
                                     int num2 = Rand.Range(1, 100);
                                     bool resistancechance = num2 < 31;
-                                    if (resistancechance)
+                                    if (resistancechance && !attackerSettlementList[j].HasMap)
                                     {
                                         Settlement rebelSettlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
                                         rebelSettlement.SetFaction(allFactionList[i]);
@@ -245,14 +324,14 @@ namespace DynamicDiplomacy
                         if (IncidentWorker_NPCConquest.allowCloneFaction && AttackerFaction != Faction.OfEmpire)
                         {
                             Faction clonefaction = FactionGenerator.NewGeneratedFaction(new FactionGeneratorParms(AttackerFaction.def, default(IdeoGenerationParms), null));
-                            clonefaction.color = Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
+                            clonefaction.color = UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f);
                             Find.FactionManager.Add(clonefaction);
 
                             for (int i = 0; i < attackerSettlementList.Count; i++)
                             {
                                 int num3 = Rand.Range(1, 100);
                                 bool resistancechance = num3 < 41;
-                                if (resistancechance)
+                                if (resistancechance && !attackerSettlementList[i].HasMap)
                                 {
                                     Settlement rebelSettlement = (Settlement)WorldObjectMaker.MakeWorldObject(WorldObjectDefOf.Settlement);
                                     rebelSettlement.SetFaction(clonefaction);
@@ -321,6 +400,15 @@ namespace DynamicDiplomacy
                     return false;
                 }
 
+                // generate battlefield setting
+                if (allowSimulatedConquest)
+                {
+                    Faction baseAttacker = AttackerBase.Faction;
+                    Faction baseDefender = FinalDefenderBase.Faction;
+                    ConquestGroupGeneration(baseAttacker, baseDefender, FinalDefenderBase);
+                    return true;
+                }
+
                 // Determine whether to raze or take control, distance-based
                 int razeroll = Rand.Range(1, 100);
                 if (razeroll <= razeChance)
@@ -375,9 +463,31 @@ namespace DynamicDiplomacy
                 // Alliance code
                 if (IncidentWorker_NPCConquest.allowAlliance && Find.World.GetComponent<DiplomacyWorldComponent>().allianceCooldown <= 0)
                 {
-                    List<Faction> alliance = (from x in Find.FactionManager.AllFactionsVisible
-                                              where x.def.settlementGenerationWeight > 0f && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned
-                                              select x).ToList<Faction>();
+                    List<Faction> alliance = new List<Faction>();
+                    if (IncidentWorker_NPCDiploChange.allowPerm)
+                    {
+                        if (IncidentWorker_NPCDiploChange.excludeEmpire)
+                        {
+                            alliance = (from x in Find.FactionManager.AllFactionsVisible
+                                                      where x.def.settlementGenerationWeight > 0f && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def != FactionDefOf.Empire
+                                                      select x).ToList<Faction>();
+                        }
+                        alliance = (from x in Find.FactionManager.AllFactionsVisible
+                                                  where x.def.settlementGenerationWeight > 0f && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned
+                                                  select x).ToList<Faction>();
+                    }
+                    else
+                    {
+                        if (IncidentWorker_NPCDiploChange.excludeEmpire)
+                        {
+                            alliance = (from x in Find.FactionManager.AllFactionsVisible
+                                        where x.def.settlementGenerationWeight > 0f && !x.def.permanentEnemy && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def != FactionDefOf.Empire
+                                        select x).ToList<Faction>();
+                        }
+                        alliance = (from x in Find.FactionManager.AllFactionsVisible
+                                    where x.def.settlementGenerationWeight > 0f && !x.def.permanentEnemy && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned
+                                    select x).ToList<Faction>();
+                    }
                     List<Faction> finalAlliance = new List<Faction>();
 
                     if (alliance.Count >= 2 && attackerBaseCount >= (totalBaseCount * 0.4) && attackerBaseCount <= (totalBaseCount * 0.6) && attackerBaseCount > 9)

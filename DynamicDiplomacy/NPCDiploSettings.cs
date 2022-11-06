@@ -67,6 +67,13 @@ namespace DynamicDiplomacy
             listing_Standard.Label("RepIdeoSurrenderChanceExp".Translate(this.settings.repIdeoSurrenderChance), -1, "RepIdeoSurrenderChanceExpTip".Translate(this.settings.repIdeoSurrenderChance));
             listing_Standard.Gap(2f);
             this.settings.repIdeoSurrenderChance = (int)listing_Standard.Slider(this.settings.repIdeoSurrenderChance, 0f, 100f);
+            listing_Standard.Gap(4f);
+            listing_Standard.CheckboxLabeled("RepNPCBattleExp".Translate(), ref this.settings.repAllowSimulatedConquest, null);
+            listing_Standard.Gap(4f);
+            string text2 = this.settings.repSimulatedConquestThreatPoint.ToString();
+            listing_Standard.Label("RepNPCBattleThreatExp".Translate(text2), -1f, null);
+            listing_Standard.Gap(4f);
+            this.settings.repSimulatedConquestThreatPoint = (int)listing_Standard.Slider(this.settings.repSimulatedConquestThreatPoint, 1000f, 10000f);
             listing_Standard.Gap(16f);
             listing_Standard.Label("RepGenerateHistoryLengthExp".Translate() + this.settings.repGenerateHistoryLength.ToString());
             listing_Standard.Gap(2f);

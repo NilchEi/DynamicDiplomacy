@@ -332,9 +332,31 @@ namespace DynamicDiplomacy
             // Alliance code
             if (IncidentWorker_NPCConquest.allowAlliance && Find.World.GetComponent<DiplomacyWorldComponent>().allianceCooldown <= 0)
             {
-                List<Faction> alliance = (from x in Find.FactionManager.AllFactionsVisible
-                                          where x.def.settlementGenerationWeight > 0f && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned
-                                          select x).ToList<Faction>();
+                List<Faction> alliance = new List<Faction>();
+                if (IncidentWorker_NPCDiploChange.allowPerm)
+                {
+                    if (IncidentWorker_NPCDiploChange.excludeEmpire)
+                    {
+                        alliance = (from x in Find.FactionManager.AllFactionsVisible
+                                    where x.def.settlementGenerationWeight > 0f && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def != FactionDefOf.Empire
+                                    select x).ToList<Faction>();
+                    }
+                    alliance = (from x in Find.FactionManager.AllFactionsVisible
+                                where x.def.settlementGenerationWeight > 0f && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned
+                                select x).ToList<Faction>();
+                }
+                else
+                {
+                    if (IncidentWorker_NPCDiploChange.excludeEmpire)
+                    {
+                        alliance = (from x in Find.FactionManager.AllFactionsVisible
+                                    where x.def.settlementGenerationWeight > 0f && !x.def.permanentEnemy && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned && x.def != FactionDefOf.Empire
+                                    select x).ToList<Faction>();
+                    }
+                    alliance = (from x in Find.FactionManager.AllFactionsVisible
+                                where x.def.settlementGenerationWeight > 0f && !x.def.permanentEnemy && !x.def.hidden && !x.IsPlayer && !x.defeated && x != AttackerFaction && x.leader != null && !x.leader.IsPrisoner && !x.leader.Spawned
+                                select x).ToList<Faction>();
+                }
                 List<Faction> finalAlliance = new List<Faction>();
 
                 if (alliance.Count >= 2 && attackerBaseCount >= (totalBaseCount * 0.4) && attackerBaseCount <= (totalBaseCount * 0.6) && attackerBaseCount > 9)

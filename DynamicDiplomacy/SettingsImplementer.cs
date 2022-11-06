@@ -26,6 +26,8 @@ namespace DynamicDiplomacy
             IncidentWorker_NPCConquest.allowRazeClear = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowRazeClear;
             IncidentWorker_NPCConquest.allowCloneFaction = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowCloneFaction;
             GameCondition_GenerateHistory.generateHistoryLength = LoadedModManager.GetMod<NPCDiploSettings>().settings.repGenerateHistoryLength;
+            IncidentWorker_NPCConquest.allowSimulatedConquest = LoadedModManager.GetMod<NPCDiploSettings>().settings.repAllowSimulatedConquest;
+            IncidentWorker_NPCConquest.simulatedConquestThreatPoint = LoadedModManager.GetMod<NPCDiploSettings>().settings.repSimulatedConquestThreatPoint;
         }
     }
 }
