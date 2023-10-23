@@ -74,6 +74,12 @@ namespace DynamicDiplomacy
 
             // adopt new ideology with FactionDef limitations
             Ideo newIdeo = IdeoGenerator.GenerateIdeo(FactionIdeosTracker.IdeoGenerationParmsForFaction_BackCompatibility(faction.def));
+            // attempt to drop if modded ideology without definition
+            if (newIdeo.name == null)
+            {
+                Find.IdeoManager.RemoveUnusedStartingIdeos();
+                return false;
+            }
             faction.ideos.SetPrimary(newIdeo);
             Find.IdeoManager.Add(newIdeo);
             faction.leader.ideo.SetIdeo(newIdeo);

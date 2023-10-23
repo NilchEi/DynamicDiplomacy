@@ -18,22 +18,26 @@ namespace DynamicDiplomacy
         {
             if (Find.TickManager.TicksGame >= generateHistoryLength)
             {
-                Map map = Find.CurrentMap;
-                bool flag2 = map.GameConditionManager.ConditionIsActive(GameConditionDefOfLocal.GenerateHistory);
-                if (flag2)
+                List<Map> maps = Current.Game.Maps;
+                for (int i = 0; i < maps.Count; i++)
                 {
-                    foreach (GameCondition gameCondition in map.GameConditionManager.ActiveConditions)
+                    Map map = maps[i];
+                    bool flag2 = map.GameConditionManager.ConditionIsActive(GameConditionDefOfLocal.GenerateHistory);
+                    if (flag2)
                     {
-                        bool flag3 = gameCondition.def == GameConditionDefOfLocal.GenerateHistory;
-                        if (flag3)
+                        foreach (GameCondition gameCondition in map.GameConditionManager.ActiveConditions)
                         {
-                            if (Find.TickManager.TicksGame < generateHistoryLength + 2500)
+                            bool flag3 = gameCondition.def == GameConditionDefOfLocal.GenerateHistory;
+                            if (flag3)
                             {
-                                Find.LetterStack.ReceiveLetter("LabelHisGen".Translate(), "DescHisGen".Translate(), LetterDefOf.NeutralEvent, null, null, null, null, null);
+                                if (Find.TickManager.TicksGame < generateHistoryLength + 2500)
+                                {
+                                    Find.LetterStack.ReceiveLetter("LabelHisGen".Translate(), "DescHisGen".Translate(), LetterDefOf.NeutralEvent, null, null, null, null, null);
+                                }
+                                map.GameConditionManager.ActiveConditions.Remove(gameCondition);
+                                ExpandableWorldObjectsUtility.ExpandableWorldObjectsUpdate();
+                                break;
                             }
-                            map.GameConditionManager.ActiveConditions.Remove(gameCondition);
-                            ExpandableWorldObjectsUtility.ExpandableWorldObjectsUpdate();
-                            break;
                         }
                     }
                 }

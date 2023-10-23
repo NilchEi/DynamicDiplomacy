@@ -79,7 +79,7 @@ namespace DynamicDiplomacy
             component.attackerFaction = baseAttacker;
             component.defenderFaction = baseDefender;
             component.combatLoc = combatLoc;
-            Find.LetterStack.ReceiveLetter("LabelConquestBattleStart".Translate(combatLoc.Name), "DescConquestBattleStart".Translate(baseAttacker.Name, baseDefender.Name, combatLoc.Name), LetterDefOf.NeutralEvent, combatLoc, null, null); ;
+            Find.LetterStack.ReceiveLetter("LabelConquestBattleStart".Translate(combatLoc.Name), "DescConquestBattleStart".Translate(baseAttacker.Name, baseDefender.Name, combatLoc.Name), LetterDefOf.NeutralEvent, new LookTargets(spot, orGenerateMap), null, null);
         }
 
         public static List<Pawn> SpawnPawnSet(Map map, List<PawnKindDef> kinds, IntVec3 spot, Faction faction)
@@ -166,7 +166,7 @@ namespace DynamicDiplomacy
                         Faction baseAttacker = settlement.Faction;
                         Faction baseDefender = AttackerFaction;
                         ConquestGroupGeneration(baseAttacker, baseDefender, AttackerBase);
-                        return true;
+                        return false;
                     }
 
                     // Determine whether to raze or take control, random-based
@@ -251,7 +251,7 @@ namespace DynamicDiplomacy
                         totalBaseCount++;
                         if (AttackerBase.Faction.HostileTo(DefenderBase.Faction))
                         {
-                            int attackDistance = Find.WorldGrid.TraversalDistanceBetween(AttackerBase.Tile, DefenderBase.Tile, true);
+                            int attackDistance = Find.WorldGrid.TraversalDistanceBetween(AttackerBase.Tile, DefenderBase.Tile, false);
                             if (attackDistance < 30)
                             {
                                 prox1.Add(DefenderBase);
@@ -406,7 +406,7 @@ namespace DynamicDiplomacy
                     Faction baseAttacker = AttackerBase.Faction;
                     Faction baseDefender = FinalDefenderBase.Faction;
                     ConquestGroupGeneration(baseAttacker, baseDefender, FinalDefenderBase);
-                    return true;
+                    return false;
                 }
 
                 // Determine whether to raze or take control, distance-based

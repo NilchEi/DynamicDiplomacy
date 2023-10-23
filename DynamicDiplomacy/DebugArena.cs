@@ -22,6 +22,7 @@ namespace DynamicDiplomacy
 
 		private int tickFightStarted;
 
+
 		public DebugArena()
 		{
 			this.tickCreated = Find.TickManager.TicksGame;
@@ -69,6 +70,12 @@ namespace DynamicDiplomacy
 			}
 			if (this.tickFightStarted != 0)
 			{
+				if (!attackerFaction.HostileTo(defenderFaction))
+                {
+					FactionRelation factionRelation = attackerFaction.RelationWith(defenderFaction, false);
+					factionRelation.kind = FactionRelationKind.Hostile;
+				}
+				
 				bool flag = !this.lhs.Any((Pawn pawn) => !pawn.Dead && !pawn.Downed && pawn.Spawned);
 				bool flag2 = !this.rhs.Any((Pawn pawn) => !pawn.Dead && !pawn.Downed && pawn.Spawned);
 				if (flag || flag2)
@@ -137,6 +144,8 @@ namespace DynamicDiplomacy
 							current2.Destroy(DestroyMode.Vanish);
 						}
 					}
+
+					Log.Message("battle switch flipped");
 					Find.WorldObjects.Remove(this.parent);
 				}
 			}
