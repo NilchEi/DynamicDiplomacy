@@ -109,6 +109,8 @@ namespace DynamicDiplomacy
             }
 
             List<Settlement> settlements = Find.WorldObjects.Settlements.ToList<Settlement>();
+            settlements.Shuffle();
+
             List<Settlement> prox1 = new List<Settlement>();
             List<Settlement> prox2 = new List<Settlement>();
             List<Settlement> prox3 = new List<Settlement>();
@@ -134,7 +136,7 @@ namespace DynamicDiplomacy
                 if (DefenderBase.Faction != null && !DefenderBase.Faction.IsPlayer && DefenderBase.Faction.def.settlementGenerationWeight > 0f && !DefenderBase.def.defName.Equals("City_Faction") && !DefenderBase.def.defName.Equals("City_Abandoned") && !DefenderBase.def.defName.Equals("City_Ghost") && !DefenderBase.def.defName.Equals("City_Citadel"))
                 {
                     totalBaseCount++;
-                    if (AttackerBase.Faction.HostileTo(DefenderBase.Faction))
+                    if (AttackerBase.Faction.HostileTo(DefenderBase.Faction) && (prox1.Count + prox2.Count == 0))
                     {
                         int attackDistance = Find.WorldGrid.TraversalDistanceBetween(AttackerBase.Tile, DefenderBase.Tile, true);
                         if (attackDistance < 30)
